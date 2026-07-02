@@ -1,6 +1,6 @@
 {
-  "name": "",
-  "description": "",
+  "name": "סיפורים לילדים ✨",
+  "description": "מחולל סיפורים קסום לילדים עם הקראה קולית מבוססת בינה מלאכותית וקולות מותאמים במיוחד לילדים",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

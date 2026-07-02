@@ -4,9 +4,9 @@ import { StoryLoader } from "./components/StoryLoader";
 import { StoryView } from "./components/StoryView";
 import { StoryLibrary } from "./components/StoryLibrary";
 import { AboutAuthor } from "./components/AboutAuthor";
+import { DonationComponent } from "./components/DonationComponent";
 import { StarBackground } from "./components/StarBackground";
 import { FairyCursor } from "./components/FairyCursor";
-import { MusicPlayer } from "./components/MusicPlayer";
 import { motion, AnimatePresence } from "motion/react";
 import { BookOpen } from "lucide-react";
 
@@ -108,35 +108,15 @@ export default function App() {
           <AnimatePresence mode="wait">
             {status === "idle" && (
               <motion.div key="main-content" exit={{ opacity: 0, scale: 0.9, filter: "blur(10px)" }}>
-                <div className="flex justify-center mb-12">
-                  <button 
-                    onClick={() => {
-                      document.getElementById('create-story-section')?.scrollIntoView({ behavior: 'smooth' });
-                    }}
-                    className="group relative px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-500 text-white font-black text-xl rounded-full shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all overflow-hidden"
-                  >
-                    <span className="relative z-10 flex items-center gap-2">
-                      ✨ ליצירת סיפור קסום אישי
-                    </span>
-                    <div className="absolute inset-0 h-full w-full bg-gradient-to-r from-pink-500 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  </button>
-                </div>
-
                 <div className="mb-16">
                   <div className="text-center mb-10">
                     <h2 className="text-3xl font-black text-purple-900 mb-3">📚 ספריית הסיפורים הקסומים</h2>
-                    <p className="text-lg text-purple-600">סיפורים מוכנים מראש עם מסר חשוב לילדים</p>
+                    <p className="text-lg text-purple-600">הסיפורים החדשים של מירב הודיה אליהו</p>
                   </div>
                   <StoryLibrary />
                 </div>
-
-                <div id="create-story-section" className="pt-8">
-                  <div className="text-center mb-10">
-                    <h2 className="text-3xl font-black text-purple-900 mb-3">✨ ליצור סיפור חדש</h2>
-                    <p className="text-lg text-purple-600">ספרו לי על מה תרצו שהסיפור יהיה</p>
-                  </div>
-                  <StoryForm onSubmit={generateStory} isLoading={false} />
-                </div>
+                
+                <DonationComponent />
                 
                 <AboutAuthor />
               </motion.div>
@@ -178,12 +158,19 @@ export default function App() {
         <footer className="mt-20 text-center pb-8 relative z-10">
           <p className="text-purple-600 font-bold flex items-center justify-center gap-2 drop-shadow-sm">
             <span className="w-10 h-[2px] bg-purple-300 rounded-full" />
-            נוצר בקסם על ידי בינה מלאכותית
+            נוצר בקסם על ידי{" "}
+            <a 
+              href="https://www.echomedia.co.il" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="text-pink-500 hover:text-pink-600 underline transition-all"
+            >
+              אקו מדיה ישראל
+            </a>
             <span className="w-10 h-[2px] bg-purple-300 rounded-full" />
           </p>
         </footer>
       </div>
-      <MusicPlayer />
     </div>
   );
 }

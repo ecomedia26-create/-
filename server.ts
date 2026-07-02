@@ -1,7 +1,7 @@
 import express from "express";
 import path from "path";
 import { createServer as createViteServer } from "vite";
-import { GoogleGenAI, ThinkingLevel } from "@google/genai";
+import { GoogleGenAI, Modality } from "@google/genai";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -16,11 +16,8 @@ async function startServer() {
 
   app.post("/api/generate-story", async (req, res) => {
     try {
-      const { storyType, ageGroup, heroName, additionalDetails, features } = req.body;
+      const { storyType, ageGroup, heroName, additionalDetails } = req.body;
 
-      const useThinking = features?.useThinking || false;
-      const useSearch = features?.useSearch || false;
-      const imageSize = features?.imageSize || "none";
 
       const prompt = `
 אתה סופר ילדים מוכשר ומקסים. עליך לכתוב סיפור לילדים בעברית לפי ההנחיות הבאות:
@@ -38,58 +35,47 @@ ${additionalDetails ? `פרטים נוספים שיש לשלב בסיפור: ${a
 הקפד לא להוסיף הערות מקדימות, פשוט החזר את הסיפור עצמו.
 `;
 
-      const textModel = useThinking ? "gemini-3.1-pro-preview" : (useSearch ? "gemini-3.5-flash" : "gemini-3.5-flash");
-      const config: any = {};
-      
-      if (useThinking) {
-        config.thinkingConfig = { thinkingLevel: ThinkingLevel.HIGH };
-      }
-      
-      if (useSearch) {
-        config.tools = [{ googleSearch: {} }];
-      }
-
       // 1. Generate Story
       const textResponse = await ai.models.generateContent({
-        model: textModel,
-        contents: prompt,
-        config
+        model: "gemini-3.5-flash",
+        contents: prompt
       });
       
       const storyText = textResponse.text;
-      
-      // 2. Generate Image (if requested)
-      let imageUrl = null;
-      if (imageSize !== "none") {
-        try {
-          const imagePrompt = `A beautiful, magical children's book illustration for a story about: ${storyType}. ${heroName ? `The main character is named ${heroName}.` : ''} ${additionalDetails}. Vibrant colors, watercolor and digital art style, magical atmosphere, kids book illustration.`;
-          
-          const imgResponse = await ai.models.generateContent({
-            model: "gemini-3-pro-image-preview",
-            contents: imagePrompt,
-            config: {
-              imageConfig: {
-                aspectRatio: "16:9",
-                imageSize: imageSize // "1K", "2K", "4K"
-              }
-            }
-          });
-          
-          for (const part of imgResponse.candidates?.[0]?.content?.parts || []) {
-            if (part.inlineData) {
-              imageUrl = `data:${part.inlineData.mimeType || 'image/png'};base64,${part.inlineData.data}`;
-              break;
-            }
-          }
-        } catch (imgErr) {
-          console.error("Error generating image:", imgErr);
-        }
-      }
 
-      res.json({ story: storyText, imageUrl });
+      res.json({ story: storyText, imageUrl: null });
     } catch (error) {
       console.error("Error generating story:", error);
       res.status(500).json({ error: "Failed to generate story." });
+    }
+  });
+
+  app.post("/api/tts", async (req, res) => {
+    try {
+      const { text, voice } = req.body;
+      
+      const response = await ai.models.generateContent({
+        model: "gemini-3.1-flash-tts-preview",
+        contents: [{ parts: [{ text: text }] }],
+        config: {
+          responseModalities: [Modality.AUDIO],
+          speechConfig: {
+            voiceConfig: {
+              prebuiltVoiceConfig: { voiceName: voice || "Kore" },
+            },
+          },
+        },
+      });
+
+      const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+      if (!base64Audio) {
+        throw new Error("No audio data returned from Gemini TTS model");
+      }
+
+      res.json({ audio: base64Audio });
+    } catch (error) {
+      console.error("Error generating speech:", error);
+      res.status(500).json({ error: "Failed to generate speech." });
     }
   });
 
